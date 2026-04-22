@@ -1,179 +1,179 @@
 # chat-bot
-!pip install pyTelegramBotAPI
-
+import os
+import time
 import telebot
-
 from telebot import types
 
-bot = telebot.TeleBot("8623095835:AAFCaquPLosz7GdASWMekslXYFphxOYqgbM")
+TOKEN = os.getenv("BOT_TOKEN")
 
-IMG1 = "AgACAgIAAxkBAAIBWmnlG25tTRdXbB4OO51r4r3aOBCsAAJfEWsbPxAxSw5a4bsK727sAQADAgADeQADOwQ"
-IMG2 = "AgACAgIAAxkBAAIBXmnlHXi-lVsmVgpGudxbske-aMFIAAJ7EWsbPxAxS9zIJTc81pEwAQADAgADeQADOwQ"
-IMG3 = "AgACAgIAAxkBAAIBX2nlHYhkkHYQadjCWAIBDOcYoZHuAAJ8EWsbPxAxS9u4HyG--yjmAQADAgADeQADOwQ"
+if not TOKEN:
+    raise ValueError("BOT_TOKEN не найден!")
 
+bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
+
+# --------- КАРТИНКИ (GitHub RAW) ---------
+GITHUB_RAW = "https://raw.githubusercontent.com/Denisov96/bot/main/"
+
+IMG_PROF = GITHUB_RAW + "vypuskniki_profili_deyatelnosti.jpg"
+IMG_SITE = GITHUB_RAW + "site_op.jpg"
+IMG_COMM = GITHUB_RAW + "not_official_resources.jpg"
+
+
+# --------- ТЕКСТЫ ---------
+graduates_who = (
+    "🎓 <b>Кем ты станешь?</b>\n\n"
+    "Преподаватель 📚\n"
+    "Филолог 📝\n"
+    "Редактор ✍️\n"
+    "Переводчик 🌍\n"
+    "Научный сотрудник 🔬\n\n"
+    "Ты сможешь работать в образовании, медиа, культуре и науке."
+)
+
+key_disciplines = (
+    "📚 <b>Ключевые дисциплины:</b>\n\n"
+    "• Основы филологии\n"
+    "• Языкознание\n"
+    "• История языка\n"
+    "• Культура речи и стилистика\n"
+    "• Теория перевода\n"
+    "• Литературоведение"
+)
+
+ege_scores = (
+    "📊 <b>Баллы ЕГЭ (2026):</b>\n\n"
+    "Русский — 40\n"
+    "Литература — 40\n\n"
+    "По выбору:\n"
+    "Иностранный — 40\n"
+    "История — 40\n"
+    "Обществознание — 45\n\n"
+    "🎯 Бюджетных мест: 30"
+)
+
+site_op = "🌐 https://programs.edu.urfu.ru/ru/10145/"
+
+head_contacts = (
+    "👩‍🏫 <b>Руководитель:</b>\n\n"
+    "Меньщикова Анна Манасовна\n"
+    "📍 Ауд. 303, пр. Ленина 51\n"
+    "📞 +7 (343) 3899417\n"
+    "✉️ anna.menschikova@urfu.ru"
+)
+
+socials = (
+    "🌐 <b>Соцсети:</b>\n\n"
+    "VK: https://vk.com/filfak_urfu\n"
+    "TG: https://t.me/philology_urfu\n\n"
+    "Абитуриентам:\n"
+    "https://vk.com/abiturient_filfaka"
+)
+
+informal = (
+    "💬 <b>Неофициальные:</b>\n\n"
+    "t.me/citaty_filfak\n"
+    "vk.com/feel_fuck_quotes\n"
+    "t.me/litsafilfakaurfu"
+)
+
+
+# --------- МЕНЮ ---------
 def main_menu():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("Общее описание программы «Филология»")
-    markup.add("Официальный сайт и контакты")
-    markup.add("Онлайн-ресурсы 💻")
-    return markup
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    m.add("📘 О программе")
+    m.add("📞 Контакты")
+    m.add("💻 Ресурсы")
+    return m
+
 
 def submenu_general():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        "Будущие профессии🎓",
-        "Ключевые дисциплины",
-        "Баллы ЕГЭ📊",
-        "В главное меню"
-    )
-    return markup
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    m.add("🎓 Профессии", "📚 Дисциплины")
+    m.add("📊 ЕГЭ", "🔙 Назад")
+    return m
+
 
 def submenu_contacts():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        "Сайт ОП",
-        "Контакты руководителя",
-        "В главное меню"
-    )
-    return markup
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    m.add("🌐 Сайт", "👩‍🏫 Руководитель")
+    m.add("🔙 Назад")
+    return m
+
 
 def submenu_online():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        "Социальные сети",
-        "Неофициальные сообщества",
-        "В главное меню"
-    )
-    return markup
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    m.add("🌐 Соцсети", "💬 Комьюнити")
+    m.add("🔙 Назад")
+    return m
 
+
+# --------- START ---------
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(
         message.chat.id,
-        "Добро пожаловать! Выберите пункт меню:",
+        "👋 <b>Хочешь поступить на филологию в УрФУ?</b>\n\n"
+        "Я помогу тебе разобраться:\n"
+        "• что изучают 📚\n"
+        "• кем ты станешь 🎓\n"
+        "• какие баллы нужны 📊\n\n"
+        "👇 Просто выбери пункт:",
         reply_markup=main_menu()
     )
 
+
+# --------- ЛОГИКА ---------
 @bot.message_handler(content_types=['text'])
-def func(message):
-    text = message.text
+def handler(message):
+    text = message.text.strip()
 
-    if text == "Общее описание программы «Филология»":
-        bot.send_message(
-            message.chat.id,
-            "Общее описание программы:",
-            reply_markup=submenu_general()
-        )
+    print("USER:", text)
 
-    elif text == "Официальный сайт и контакты":
-        bot.send_message(
-            message.chat.id,
-            "Официальный сайт и контакты:",
-            reply_markup=submenu_contacts()
-        )
+    if text == "📘 О программе":
+        bot.send_message(message.chat.id, "Выбери:", reply_markup=submenu_general())
 
-    elif text == "Онлайн-ресурсы 💻":
-        bot.send_message(
-            message.chat.id,
-            "Онлайн-ресурсы:",
-            reply_markup=submenu_online()
-        )
+    elif text == "📞 Контакты":
+        bot.send_message(message.chat.id, "Контакты:", reply_markup=submenu_contacts())
 
-    elif text == "Будущие профессии🎓":
-        bot.send_photo(message.chat.id, IMG1)
-        bot.send_message(message.chat.id, graduates_who)
+    elif text == "💻 Ресурсы":
+        bot.send_message(message.chat.id, "Ресурсы:", reply_markup=submenu_online())
 
-    elif text == "Ключевые дисциплины":
+    elif text == "🎓 Профессии":
+        bot.send_photo(message.chat.id, IMG_PROF, caption=graduates_who)
+
+    elif text == "📚 Дисциплины":
         bot.send_message(message.chat.id, key_disciplines)
 
-    elif text == "Баллы ЕГЭ📊":
+    elif text == "📊 ЕГЭ":
         bot.send_message(message.chat.id, ege_scores)
 
-    elif text == "Сайт ОП":
-        bot.send_photo(message.chat.id,IMG2)
-        bot.send_message(message.chat.id, site_op)
+    elif text == "🌐 Сайт":
+        bot.send_photo(message.chat.id, IMG_SITE, caption=site_op)
 
-    elif text == "Контакты руководителя":
+    elif text == "👩‍🏫 Руководитель":
         bot.send_message(message.chat.id, head_contacts)
 
-    elif text == "Социальные сети":
+    elif text == "🌐 Соцсети":
         bot.send_message(message.chat.id, socials)
 
-    elif text == "Неофициальные сообщества":
-        bot.send_photo(message.chat.id, IMG3)
-        bot.send_message(message.chat.id, informal)
+    elif text == "💬 Комьюнити":
+        bot.send_photo(message.chat.id, IMG_COMM, caption=informal)
 
-    elif text == "В главное меню":
-        bot.send_message(
-            message.chat.id,
-            "Вы вернулись в главное меню.",
-            reply_markup=main_menu()
-        )
+    elif text == "🔙 Назад":
+        bot.send_message(message.chat.id, "Главное меню", reply_markup=main_menu())
 
     else:
-        bot.send_message(
-            message.chat.id,
-            "Команда не распознана. Выберите кнопку из меню."
-        )
+        bot.send_message(message.chat.id, "Используй кнопки 👇")
 
 
+# --------- ЗАПУСК ---------
+if __name__ == "__main__":
+    print("BOT START")
 
-graduates_who = (
-    "ОП готовит преподавателей, историков, музейных работников и филологов "
-    "широкого профиля – специалистов по русской и мировой литературе, "
-    "успешно реализующихся в научной, преподавательской, управленческой, "
-    "проектной и творческой деятельности."
-)
+    try:
+        bot.remove_webhook()
+        time.sleep(1)
+    except:
+        pass
 
-key_disciplines = (
-    "Основы филологии\n"
-    "Языкознание\n"
-    "История языка\n"
-    "Культура речи и стилистика\n"
-    "Теория перевода\n"
-    "Теоретический курс основного языка\n"
-    "Введение в литературоведение"
-)
-
-ege_scores = (
-    "Минимальные баллы 2026:\n"
-    "Литература – 40\n"
-    "Русский язык – 40\n"
-    "По выбору:\n"
-    "Иностранный язык – 40\n"
-    "История – 40\n"
-    "Обществознание – 45\n"
-    "Бюджетных мест: 30"
-)
-
-site_op = (
-
-
-"Актуальная информация на сайте:\n"
-    "https://programs.edu.urfu.ru/ru/10145/"
-)
-
-head_contacts = (
-    "Меньщикова Анна Манасовна\n\n"
-    "Где можно найти: Аудитория 303, пр. Ленина, 51\n"
-    "Куда звонить: +7 (343) 3899417\n"
-    "Куда писать: anna.menschikova@urfu.ru"
-)
-
-socials = (
-    "Новости и события ОП смотреть в:\n\n"
-    "ВКонтакте – https://vk.com/filfak_urfu\n"
-    "Телеграм – https://t.me/philology_urfu\n\n"
-    "Абитуриентам – https://vk.com/abiturient_filfaka"
-)
-
-informal = (
-    "Неофициальные сообщества:\n\n"
-    "Цитаты филфака: https://t.me/citaty_filfak\n"
-    "Версия ВК: https://vk.com/feel_fuck_quotes\n"
-    "Лица филфака: https://t.me/litsafilfakaurfu"
-)
-
-
-
-bot.infinity_polling()
+    bot.infinity_polling(skip_pending=True)
